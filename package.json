@@ -1,0 +1,65 @@
+{
+  "name": "qh-reader",
+  "productName": "QH阅读",
+  "version": "1.0.0",
+  "description": "一个本地化的 Markdown 文件阅读器",
+  "main": "src/main.js",
+  "author": "zippos",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --win --dir",
+    "dist": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.zippos.qhreader",
+    "productName": "QH阅读",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ],
+      "icon": "assets/icon.ico",
+      "fileAssociations": [
+        {
+          "ext": "md",
+          "name": "Markdown 文档",
+          "description": "Markdown 文档",
+          "role": "Viewer"
+        },
+        {
+          "ext": "markdown",
+          "name": "Markdown 文档",
+          "description": "Markdown 文档",
+          "role": "Viewer"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "QH阅读"
+    },
+    "portable": {
+      "artifactName": "QH阅读-便携版-${version}.exe"
+    }
+  },
+  "dependencies": {
+    "highlight.js": "^11.12.0",
+    "markdown-it": "^14.3.2"
+  },
+  "devDependencies": {
+    "electron": "^37.10.3",
+    "electron-builder": "^26.15.3"
+  }
+}

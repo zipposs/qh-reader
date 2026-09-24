@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' file: data: blob: https: http:; media-src file: data: blob: https: http:; font-src 'self' file: data:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>QH阅读</title>
+  <link rel="stylesheet" href="content.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="empty">
+  <!-- 顶部工具栏（与标题栏合一；左段与侧栏同色，像 Finder 一样侧栏延伸到顶部） -->
+  <header id="mdr-toolbar">
+    <div class="tb-cap">
+      <button class="tb-btn" data-action="app-menu" title="菜单">
+        <svg viewBox="0 0 16 16"><path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11"/></svg>
+      </button>
+      <button class="tb-btn" data-action="toggle-sidebar" title="文件侧栏 (Ctrl+B)">
+        <svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="2.5"/><path d="M6 2.5v11"/></svg>
+      </button>
+      <span class="tb-flex"></span>
+      <button class="tb-btn" data-action="open-file" title="打开文件 (Ctrl+O)">
+        <svg viewBox="0 0 16 16"><path d="M4 1.5h5l3.5 3.5v9.5h-8.5z"/><path d="M9 1.5V5h3.5"/></svg>
+      </button>
+      <button class="tb-btn" data-action="open-folder" title="打开文件夹 (Ctrl+Shift+O)">
+        <svg viewBox="0 0 16 16"><path d="M1.5 4a1 1 0 0 1 1-1h3.5l1.5 1.5h6a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1z"/></svg>
+      </button>
+    </div>
+    <div class="tb-main">
+      <div class="tb-group">
+        <button class="tb-btn" id="mdr-btn-back" data-action="back" title="后退 (Alt+←)" disabled>
+          <svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>
+        </button>
+        <button class="tb-btn" id="mdr-btn-forward" data-action="forward" title="前进 (Alt+→)" disabled>
+          <svg viewBox="0 0 16 16"><path d="m6 3 5 5-5 5"/></svg>
+        </button>
+      </div>
+      <div id="mdr-doc-title" class="tb-title"></div>
+      <div class="tb-group">
+        <button class="tb-btn tb-save" id="mdr-btn-save" data-action="save" title="保存 (Ctrl+S)" disabled>
+          <svg viewBox="0 0 16 16"><path d="M3.5 2.5h7l2.5 2.5v7.5a1 1 0 0 1-1 1h-8.5a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M5.5 2.5v3h4.5v-3M5 13.5v-4h6v4"/></svg>
+        </button>
+        <div class="seg" id="mdr-mode-seg" role="group" aria-label="模式">
+          <button class="seg-btn on" id="mdr-seg-read" data-action="mode-read" title="阅读模式" disabled>阅读</button>
+          <button class="seg-btn" id="mdr-seg-edit" data-action="mode-edit" title="编辑模式 (Ctrl+/)" disabled>编辑</button>
+        </div>
+        <span class="tb-sep"></span>
+        <button class="tb-btn" data-action="find" title="查找 (Ctrl+F)">
+          <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 4 4"/></svg>
+        </button>
+        <button class="tb-btn" id="mdr-btn-theme" data-action="cycle-theme" title="主题">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 1 0 12z" class="fill"/></svg>
+        </button>
+        <button class="tb-btn" data-action="toggle-outline" title="大纲 (Ctrl+Shift+B)">
+          <svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="2.5"/><path d="M10 2.5v11"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="mdr-main">
+    <!-- 左侧：文件树 -->
+    <aside id="mdr-sidebar">
+      <div class="side-head">
+        <span id="mdr-folder-name" class="side-title">未打开文件夹</span>
+        <button class="icon-btn" data-action="refresh-tree" title="刷新文件列表">
+          <svg viewBox="0 0 16 16"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M12.5 1.5v3h-3"/></svg>
+        </button>
+        <button class="icon-btn" data-action="close-folder" title="关闭文件夹">
+          <svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>
+        </button>
+      </div>
+      <div class="side-filter">
+        <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
+        <input id="mdr-tree-filter" type="search" placeholder="搜索" spellcheck="false">
+      </div>
+      <div id="mdr-tree" class="tree" tabindex="0"></div>
+      <div id="mdr-tree-empty" class="side-empty">
+        <p>还没有打开文件夹</p>
+        <button class="btn" data-action="open-folder">打开文件夹</button>
+      </div>
+    </aside>
+    <div id="mdr-sidebar-resizer" title="拖动调整宽度"></div>
+
+    <!-- 中间：正文 -->
+    <section id="mdr-content-wrap">
+      <div id="mdr-find-bar" hidden>
+        <svg viewBox="0 0 16 16" class="find-ic"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
+        <input id="mdr-find-input" type="text" placeholder="在文档中查找" spellcheck="false">
+        <span id="mdr-find-count">0/0</span>
+        <button class="icon-btn" id="mdr-find-prev" title="上一个 (Shift+Enter)">
+          <svg viewBox="0 0 16 16"><path d="m3.5 10 4.5-4.5 4.5 4.5"/></svg>
+        </button>
+        <button class="icon-btn" id="mdr-find-next" title="下一个 (Enter)">
+          <svg viewBox="0 0 16 16"><path d="m3.5 6 4.5 4.5 4.5-4.5"/></svg>
+        </button>
+        <button class="icon-btn" id="mdr-find-close" title="关闭 (Esc)">
+          <svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>
+        </button>
+      </div>
+
+      <div id="mdr-editor-pane">
+        <textarea id="mdr-editor" spellcheck="false" wrap="soft" aria-label="Markdown 源码"></textarea>
+        <div id="mdr-md-help">
+          <button id="mdr-md-help-toggle" type="button" aria-expanded="false">
+            <svg viewBox="0 0 16 16" class="help-ic"><path d="M6 6a2 2 0 0 1 4 0c0 1.2-1.5 1.6-2 2.5M8 11.5h.01"/><rect x="1.5" y="1.5" width="13" height="13" rx="3"/></svg>
+            <span>Markdown 语法速查</span>
+            <svg viewBox="0 0 16 16" class="help-twisty"><path d="m4 6 4 4 4-4"/></svg>
+          </button>
+          <div id="mdr-md-help-body" class="md-help-body" hidden>
+            <p class="md-help-tip">点击任意一项，把它插入到光标处</p>
+            <div class="md-help-grid" id="mdr-md-help-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="mdr-scroller" tabindex="-1">
+        <article id="mdr-content" class="markdown-body"></article>
+      </div>
+
+      <div id="mdr-welcome">
+        <div class="welcome-inner">
+          <div class="welcome-logo">
+            <svg viewBox="0 0 64 64"><rect x="2" y="2" width="60" height="60" rx="14"/><path d="M14 44V20l9 12 9-12v24" class="stroke"/><path d="M44 20v22m-7-7 7 7 7-7" class="stroke"/></svg>
+          </div>
+          <h1>QH阅读</h1>
+          <p class="welcome-sub">本地 Markdown 文件阅读器 · 把文件或文件夹拖到窗口即可打开</p>
+          <div class="welcome-actions">
+            <button class="btn primary" data-action="open-file">打开文件 <kbd>Ctrl+O</kbd></button>
+            <button class="btn" data-action="open-folder">打开文件夹 <kbd>Ctrl+Shift+O</kbd></button>
+          </div>
+          <div id="mdr-recent-block">
+            <div class="recent-head">
+              <span>最近打开</span>
+              <button class="link-btn" data-action="clear-recent">清空</button>
+            </div>
+            <ul id="mdr-recent-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <button id="mdr-sel-copy" type="button" title="复制选中内容 (Ctrl+C)" hidden>
+        <svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>
+        <span>复制</span>
+      </button>
+
+      <div id="mdr-drop-overlay" hidden><div>松开鼠标以打开</div></div>
+    </section>
+
+    <!-- 右侧：大纲 -->
+    <aside id="mdr-outline">
+      <div class="side-head"><span class="side-title">大纲</span></div>
+      <nav id="mdr-toc" class="toc"></nav>
+      <div id="mdr-toc-empty" class="side-empty"><p>没有标题</p></div>
+    </aside>
+  </div>
+
+  <!-- 底部状态栏 -->
+  <footer id="mdr-statusbar">
+    <span id="mdr-st-path" class="st-path" title="在资源管理器中显示"></span>
+    <span class="st-right">
+      <span id="mdr-st-encoding"></span>
+      <span id="mdr-st-words"></span>
+      <span id="mdr-st-lines"></span>
+      <span id="mdr-st-time"></span>
+      <span id="mdr-st-size"></span>
+      <span class="st-zoom">
+        <button class="st-btn" data-action="zoom-out" title="缩小 (Ctrl+-)">−</button>
+        <button class="st-btn st-zoom-val" id="mdr-btn-zoom" data-action="zoom-reset" title="重置缩放 (Ctrl+0)">100%</button>
+        <button class="st-btn" data-action="zoom-in" title="放大 (Ctrl+=)">+</button>
+      </span>
+    </span>
+  </footer>
+
+  <!-- 快捷键说明 -->
+  <div id="mdr-modal" class="modal" hidden>
+    <div class="modal-box" role="dialog" aria-labelledby="mdr-modal-title">
+      <div class="modal-head">
+        <span id="mdr-modal-title">快捷键</span>
+        <button class="icon-btn" data-action="close-modal" title="关闭 (Esc)">
+          <svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>
+        </button>
+      </div>
+      <table class="keys">
+        <tr><td>打开文件 / 文件夹</td><td><kbd>Ctrl+O</kbd> / <kbd>Ctrl+Shift+O</kbd></td></tr>
+        <tr><td>切换 阅读 / 编辑 模式</td><td><kbd>Ctrl+/</kbd></td></tr>
+        <tr><td>Markdown 语法速查（编辑模式）</td><td>编辑区底部的「Markdown 语法速查」</td></tr>
+        <tr><td>保存（编辑模式）</td><td><kbd>Ctrl+S</kbd></td></tr>
+        <tr><td>重新加载</td><td><kbd>F5</kbd></td></tr>
+        <tr><td>关闭文档</td><td><kbd>Ctrl+W</kbd></td></tr>
+        <tr><td>查找（下一个 / 上一个）</td><td><kbd>Ctrl+F</kbd>，<kbd>Enter</kbd> / <kbd>Shift+Enter</kbd></td></tr>
+        <tr><td>复制选中内容 / 全选</td><td><kbd>Ctrl+C</kbd> / <kbd>Ctrl+A</kbd>，或点选区旁的“复制”按钮</td></tr>
+        <tr><td>文件侧栏 / 大纲</td><td><kbd>Ctrl+B</kbd> / <kbd>Ctrl+Shift+B</kbd></td></tr>
+        <tr><td>放大 / 缩小 / 重置</td><td><kbd>Ctrl+=</kbd> / <kbd>Ctrl+-</kbd> / <kbd>Ctrl+0</kbd>，或 <kbd>Ctrl</kbd>+滚轮</td></tr>
+        <tr><td>后退 / 前进</td><td><kbd>Alt+←</kbd> / <kbd>Alt+→</kbd></td></tr>
+        <tr><td>回到顶部 / 跳到底部</td><td><kbd>Ctrl+Home</kbd> / <kbd>Ctrl+End</kbd></td></tr>
+        <tr><td>导出 HTML / PDF</td><td><kbd>Ctrl+E</kbd> / <kbd>Ctrl+Shift+E</kbd></td></tr>
+        <tr><td>打印</td><td><kbd>Ctrl+P</kbd></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div id="mdr-toast" hidden></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

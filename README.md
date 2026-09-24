@@ -29,6 +29,20 @@
 
 安装后会注册 `.md` / `.markdown` 文件关联。程序未签名，首次运行时 SmartScreen 可能提示「未知发布者」，点击「更多信息 → 仍要运行」即可。
 
+## 界面预览
+
+| 浅色主题 | 深色主题 |
+| --- | --- |
+| ![浅色主题](assets/screenshots/浅色主题.png) | ![深色主题](assets/screenshots/深色主题.png) |
+
+| 编辑模式（源码 + 实时预览） | 欢迎页 |
+| --- | --- |
+| ![编辑模式](assets/screenshots/编辑模式.png) | ![欢迎页](assets/screenshots/欢迎页.png) |
+
+> 快捷键一览（`F1` 打开）：
+
+![快捷键](assets/screenshots/快捷键.png)
+
 ## 使用
 
 - **打开**：`Ctrl+O` 打开文件，`Ctrl+Shift+O` 打开文件夹，或直接把文件 / 文件夹拖到窗口
